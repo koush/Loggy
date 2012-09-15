@@ -20,6 +20,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.Util;
@@ -202,6 +203,7 @@ public class LoggyService extends Service {
         });
     }
     
+    private static final String LOGTAG = "Loggy";
     private static final int LOGGY_NOTIFICATION = 3000;
     @Override
     public void onCreate() {
@@ -231,9 +233,10 @@ public class LoggyService extends Service {
                         try {
                             // get the last 100 lines
                             String last = null;
+                            final long start = System.currentTimeMillis();
                             String s;
                             SuRunner runner = new SuRunner();
-                            runner.addCommand("/system/bin/logcat -t 500 -b radio -b system -b main -b events");
+                            runner.addCommand("/system/bin/logcat -t 500 -b radio -b events -b system -b main");
                             process = runner.runSuCommand(LoggyService.this);
                             DataInputStream dis = new DataInputStream(process.getInputStream());
                             while (null != (s = dis.readLine())) {
@@ -246,18 +249,18 @@ public class LoggyService extends Service {
                             
                             // now get the running log
                             runner = new SuRunner();
-                            runner.addCommand("/system/bin/logcat -b radio -b system -b main -b events");
-                            process = runner.runSuCommand(LoggyService.this);//Runtime.getRuntime().exec(new String[] { "su", "-c", "/system/bin/logcat -t 100" });
+                            runner.addCommand("/system/bin/logcat -b radio -b events -b system -b main");
+                            process = runner.runSuCommand(LoggyService.this);
+                            dis = new DataInputStream(process.getInputStream());
 
                             // also grab kmsg
                             new Thread() {
                                 public void run() {
                                     try {
                                         SuRunner krunner = new SuRunner();
-                                        krunner.addCommand("echo catting kmsg");
                                         krunner.addCommand("cat /proc/kmsg");
                                         kmsgProcess = krunner.runSuCommand(LoggyService.this);
-                                        DataInputStream dis = new DataInputStream(process.getInputStream());
+                                        DataInputStream dis = new DataInputStream(kmsgProcess.getInputStream());
                                         String s;
                                         while (null != (s = dis.readLine())) {
                                             if (s.length() == 0)
@@ -268,14 +271,14 @@ public class LoggyService extends Service {
                                                 }
                                             }
                                         }
+                                        Log.i(LOGTAG, "kmsg exited.");
+                                        process.destroy();
                                     }
                                     catch (Exception ex) {
                                     }
-
                                 };
                             }.start();
-                            
-                            dis = new DataInputStream(process.getInputStream());
+
                             while (null != (s = dis.readLine())) {
                                 if (s.length() == 0)
                                     continue;
@@ -287,6 +290,8 @@ public class LoggyService extends Service {
                                     }
                                 }
                             }
+                            Log.i(LOGTAG, "logcat exited.");
+                            kmsgProcess.destroy();
                         }
                         catch (Exception e) {
                         }
@@ -322,8 +327,7 @@ public class LoggyService extends Service {
         viewDir("/sdcard", Environment.getExternalStorageDirectory(), "sdcard");
         viewDir("/sdcard/.*?", Environment.getExternalStorageDirectory(), "sdcard");
         directory("/json/sdcard/.*?", Environment.getExternalStorageDirectory());
-        
-        
+
         mServer.directory(this, "/.*?", "site/");
         
         super.onCreate();

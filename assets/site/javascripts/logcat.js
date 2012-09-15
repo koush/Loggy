@@ -266,10 +266,18 @@
 		var parts = e.data.split(':', 2);
 		parts[0] = parts[0].replace('(', ' ').replace(')', ' ');
 		var processInfo = sscanf(parts[0], '%c/%s %d');
+		if (processInfo.length != 3) {
+			console.log('skipping');
+			return;
+		}
 		var type = processInfo[0];
 		var tag = processInfo[1];
 		var pid = processInfo[2];
 		var text = parts[1];
+		if (!text || !tag || !pid || !text) {
+			console.log('skipping 2');
+			return;
+		}
 		var color = tags[tag];
 		if (!color) {
 			color = colors.splice(0, 1);

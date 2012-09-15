@@ -91,13 +91,10 @@ public class SuRunner {
         thread.start();
     }
 
-    public final static String SCRIPT_NAME = "surunner.sh";
-
     public Process runSuCommandAsync(Context context) {
         try {
-            // String scriptName = String.valueOf(System.currentTimeMillis());
-            String scriptName = SCRIPT_NAME;
-            DataOutputStream fout = new DataOutputStream(context.openFileOutput(scriptName, 0));
+            Process ret = Runtime.getRuntime().exec("su");
+            DataOutputStream fout = new DataOutputStream(ret.getOutputStream());
 
             for (String key : mEnvironment.keySet()) {
                 String value = mEnvironment.get(key);
@@ -106,10 +103,9 @@ public class SuRunner {
                 fout.writeBytes(String.format("export %s='%s'\n", key, value));
             }
             fout.writeBytes(mCommands.toString());
+            fout.flush();
             fout.close();
-
-            String[] args = new String[] { "su", "-c", ". " + context.getFilesDir().getAbsolutePath() + "/" + scriptName };
-            return Runtime.getRuntime().exec(args);
+            return ret;
         }
         catch (Exception ex) {
             return null;
