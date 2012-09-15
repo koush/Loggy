@@ -233,7 +233,7 @@ public class LoggyService extends Service {
                             String last = null;
                             String s;
                             SuRunner runner = new SuRunner();
-                            runner.addCommand("/system/bin/logcat -t 500 -b radio -b system -b main -b events -b radio");
+                            runner.addCommand("/system/bin/logcat -t 500 -b radio -b system -b main -b events");
                             process = runner.runSuCommand(LoggyService.this);
                             DataInputStream dis = new DataInputStream(process.getInputStream());
                             while (null != (s = dis.readLine())) {
@@ -246,7 +246,7 @@ public class LoggyService extends Service {
                             
                             // now get the running log
                             runner = new SuRunner();
-                            runner.addCommand("/system/bin/logcat -b radio -b system -b main -b events -b radio");
+                            runner.addCommand("/system/bin/logcat -b radio -b system -b main -b events");
                             process = runner.runSuCommand(LoggyService.this);//Runtime.getRuntime().exec(new String[] { "su", "-c", "/system/bin/logcat -t 100" });
 
                             // also grab kmsg
@@ -262,7 +262,7 @@ public class LoggyService extends Service {
                                         while (null != (s = dis.readLine())) {
                                             if (s.length() == 0)
                                                 continue;
-                                            if (true) {//!skip) {
+                                            if (!skip) {
                                                 synchronized (webSocket) {
                                                     webSocket.send("I/kmsg(0): " + s);
                                                 }
