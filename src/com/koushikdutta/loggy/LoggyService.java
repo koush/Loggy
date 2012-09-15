@@ -13,11 +13,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.IBinder;
 
+import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.Util;
 import com.koushikdutta.async.callback.ClosedCallback;
 import com.koushikdutta.async.callback.CompletedCallback;
@@ -33,9 +37,11 @@ public class LoggyService extends Service {
     
     @Override
     public void onDestroy() {
+        NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        nm.cancel(LOGGY_NOTIFICATION);
         super.onDestroy();
-        
         mServer.stop();
+        AsyncServer.getDefault().stop();
     }
     
     
@@ -65,7 +71,7 @@ public class LoggyService extends Service {
 
                 if (file.isDirectory()) {
                     StringBuilder b = new StringBuilder();
-                    b.append(String.format("<html><title>Loggy</title><head><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
+                    b.append(String.format("<html><title>Loggy</title><head><script src='/bootstrap/js/bootstrap.min.js'></script><link rel='stylesheet' href='/stylesheets/style.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css'></link><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
                     response.send(b.toString());
                     return;
                 }
@@ -94,7 +100,7 @@ public class LoggyService extends Service {
             @Override
             public void onRequest(AsyncHttpServerRequest request, AsyncHttpServerResponse response) {
                 StringBuilder b = new StringBuilder();
-                b.append(String.format("<html><title>Loggy</title><head><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
+                b.append(String.format("<html><title>Loggy</title><head><script src='/bootstrap/js/bootstrap.min.js'></script><link rel='stylesheet' href='/stylesheets/style.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css'></link><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
                 response.send(b.toString());
             }
         });
@@ -196,9 +202,19 @@ public class LoggyService extends Service {
         });
     }
     
+    private static final int LOGGY_NOTIFICATION = 3000;
     @Override
     public void onCreate() {
         mServer = new AsyncHttpServer(Settings.getInstance(this).getInt("port", 3000));
+        
+        NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        Notification n = new Notification(R.drawable.ic_stat_running, getString(R.string.loggy_on), 0);
+        n.flags |= Notification.FLAG_ONGOING_EVENT;
+        Intent i = new Intent();
+        i.setClass(this, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, i, Intent.FLAG_ACTIVITY_NEW_TASK);
+        n.setLatestEventInfo(this, getString(R.string.loggy_on), null, pi);
+        nm.notify(LOGGY_NOTIFICATION, n);
         
         view("/", "index");
 

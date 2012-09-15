@@ -1,8 +1,12 @@
 <resources>
 
     <string name="app_name">Loggy</string>
-    <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_main">MainActivity</string>
 
+    <string name="superuser">Superuser</string>
+    <string name="superuser_not_detected">Superuser was not detected. Is your phone rooted?</string>
+    
+    <string name="loggy_off">Loggy is not running.</string>
+    <string name="loggy_on">Loggy is running.</string>
+    <string name="loggy_what">Loggy is running, but could not detect your network interface.</string>
 </resources>

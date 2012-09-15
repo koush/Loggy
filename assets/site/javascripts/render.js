@@ -7,7 +7,5 @@
 })();
 
 jade.renderFile(view, {}, function(err, index) {
-  jade.renderFile('/views/layout.jade', { body: index }, function(err, layout) {
-    $('body').html(layout);
-  })
+  $('body').html(index);
 })

@@ -301,7 +301,7 @@
 			t = setTimeout(function() {
 				$("html, body").animate({ scrollTop: $(document).height() }, 200);
 			}, 200);
-		})
+		});
 	};
 	ws.onclose = function() {
 	  console.log("closed");
