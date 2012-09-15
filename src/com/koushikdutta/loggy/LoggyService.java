@@ -230,7 +230,10 @@ public class LoggyService extends Service {
                             // get the last 100 lines
                             String last = null;
                             String s;
-                            process = Runtime.getRuntime().exec(new String[] { "su", "-c", "/system/bin/logcat -t 100" });
+                            SuRunner runner = new SuRunner();
+                            runner.addCommand("/system/bin/logcat -t 100");
+                            process = runner.runSuCommand(LoggyService.this);
+//                            process = Runtime.getRuntime().exec(new String[] { "su", "-c", "/system/bin/logcat -t 100" });
                             DataInputStream dis = new DataInputStream(process.getInputStream());
                             while (null != (s = dis.readLine())) {
                                 if (s.length() == 0)
@@ -241,7 +244,10 @@ public class LoggyService extends Service {
                             dis.close();
 
                             // now get the running log
-                            process = Runtime.getRuntime().exec("su -c /system/bin/logcat");
+                            runner = new SuRunner();
+                            runner.addCommand("/system/bin/logcat");
+                            process = runner.runSuCommand(LoggyService.this);//Runtime.getRuntime().exec(new String[] { "su", "-c", "/system/bin/logcat -t 100" });
+//                            process = Runtime.getRuntime().exec("su -c /system/bin/logcat");
                             boolean skip = true;
                             dis = new DataInputStream(process.getInputStream());
                             while (null != (s = dis.readLine())) {

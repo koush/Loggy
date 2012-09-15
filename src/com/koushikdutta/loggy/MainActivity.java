@@ -61,6 +61,14 @@ public class MainActivity extends Activity {
                         Helper.showAlertDialog(MainActivity.this, R.string.superuser, R.string.superuser_not_detected);
                         return;
                     }
+                    // force the su dialog
+                    new Thread() {
+                        public void run() {
+                            SuRunner runner = new SuRunner();
+                            runner.addCommand("echo test");
+                            runner.runSuCommand(MainActivity.this);
+                        };
+                    }.start();
                     startService(new Intent(MainActivity.this, LoggyService.class));
                 }
             }
