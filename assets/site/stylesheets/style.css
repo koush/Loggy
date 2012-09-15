@@ -1,0 +1,46 @@
+.logtag {
+	text-align: right;
+	-webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+
+.logpid {
+  text-align: center;
+  background: grey;
+}
+
+.log {
+	padding-top:0px;
+  padding-bottom:0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.logtype {
+  text-align: center;
+	margin-right: 10px;
+  float: left;
+  width: 20px;
+}
+
+.logtype.D {
+   background-color: blue;
+}
+
+.logtype.I {
+   background-color: green;
+}
+
+.logtype.W {
+   background-color: yellow;
+}
+
+.logtype.E {
+	 background-color: red;
+}
+
+#log-rows {
+   background-color: black;
+   color: white;
+}

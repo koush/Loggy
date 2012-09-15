@@ -1,0 +1,22 @@
+script(type="text/javascript", src="/web-socket-js/swfobject.js")
+script(type="text/javascript", src="/web-socket-js/web_socket.js")
+script(type="text/javascript", src="/javascripts/sdcard.js")
+.navbar.navbar-fixed-top
+  .navbar-inner
+    .container
+      a.brand(href='#') Loggy
+      ul.nav
+        li
+          a(href='/') Home
+        li
+          a(href='/logcat') logcat
+        li.active
+          a(href='/sdcard') SD Card
+
+br
+br
+br
+br
+
+#directories-rows.container
+#files-rows.container
