@@ -248,11 +248,13 @@
 
 
 	// Let the library know where WebSocketMain.swf is:
-	WEB_SOCKET_SWF_LOCATION = "WebSocketMain.swf";
+	console.log("attempting connection...");
 
 	// Write your code in the same way as for native WebSocket:
 	var ws = new WebSocket(window.location.href.replace('http', 'ws') + '/stream');
+	console.log(WebSocket);
 	ws.onopen = function() {
+		console.log('connected');
 	};
 	var t;
 	

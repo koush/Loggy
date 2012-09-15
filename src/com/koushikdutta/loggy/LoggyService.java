@@ -71,7 +71,7 @@ public class LoggyService extends Service {
 
                 if (file.isDirectory()) {
                     StringBuilder b = new StringBuilder();
-                    b.append(String.format("<html><title>Loggy</title><head><script src='/bootstrap/js/bootstrap.min.js'></script><link rel='stylesheet' href='/stylesheets/style.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css'></link><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
+                    b.append(String.format("<html><title>Loggy</title><head><script>WEB_SOCKET_SWF_LOCATION='/web-socket-js/WebSocketMain.swf';</script><link rel='stylesheet' href='/stylesheets/style.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css'></link><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/bootstrap/js/bootstrap.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
                     response.send(b.toString());
                     return;
                 }
@@ -100,7 +100,7 @@ public class LoggyService extends Service {
             @Override
             public void onRequest(AsyncHttpServerRequest request, AsyncHttpServerResponse response) {
                 StringBuilder b = new StringBuilder();
-                b.append(String.format("<html><title>Loggy</title><head><script src='/bootstrap/js/bootstrap.min.js'></script><link rel='stylesheet' href='/stylesheets/style.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css'></link><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
+                b.append(String.format("<html><title>Loggy</title><head><script>WEB_SOCKET_SWF_LOCATION='/web-socket-js/WebSocketMain.swf';</script><link rel='stylesheet' href='/stylesheets/style.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css'></link><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/bootstrap/js/bootstrap.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
                 response.send(b.toString());
             }
         });

@@ -82,8 +82,8 @@ public class MainActivity extends Activity {
             if (wifiInterface != null) {
                 try {
                     NetworkInterface iface = NetworkInterface.getByName(wifiInterface);
+                    wifiInterface = null;
                     if (iface != null) {
-                        wifiInterface = null;
                         Enumeration<InetAddress> iter = iface.getInetAddresses();
                         while (iter.hasMoreElements()) {
                             InetAddress addr = iter.nextElement();
