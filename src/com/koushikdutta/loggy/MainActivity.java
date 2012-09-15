@@ -10,6 +10,8 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemProperties;
@@ -80,17 +82,32 @@ public class MainActivity extends Activity {
             if (wifiInterface != null) {
                 try {
                     NetworkInterface iface = NetworkInterface.getByName(wifiInterface);
-                    wifiInterface = null;
-                    Enumeration<InetAddress> iter = iface.getInetAddresses();
-                    while (iter.hasMoreElements()) {
-                        InetAddress addr = iter.nextElement();
-                        if (!(addr instanceof Inet4Address))
-                            continue;
-                        wifiInterface = addr.getHostAddress();
-                        break;
+                    if (iface != null) {
+                        wifiInterface = null;
+                        Enumeration<InetAddress> iter = iface.getInetAddresses();
+                        while (iter.hasMoreElements()) {
+                            InetAddress addr = iter.nextElement();
+                            if (!(addr instanceof Inet4Address))
+                                continue;
+                            wifiInterface = addr.getHostAddress();
+                            break;
+                        }
                     }
                 }
-                catch (SocketException e) {
+                catch (Exception e) {
+                }
+            }
+            if (wifiInterface == null) {
+                try {
+                    int ip = ((WifiManager)(getSystemService(WIFI_SERVICE))).getConnectionInfo().getIpAddress();
+                    InetAddress addr = InetAddress.getByAddress(new byte[] {
+                                                                    (byte)(ip >>> 24),
+                                                                    (byte)(ip >>> 16),
+                                                                    (byte)(ip >>> 8),
+                                                                    (byte)ip});
+                    wifiInterface = addr.getHostAddress();
+                }
+                catch (Exception e) {
                 }
             }
             if (wifiInterface != null) {
