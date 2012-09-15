@@ -222,18 +222,19 @@ public class LoggyService extends Service {
 
         mServer.websocket("/logcat/stream", new WebSocketCallback() {
             Process process;
+            Process kmsgProcess;
             @Override
             public void onConnected(final WebSocket webSocket) {
                 new Thread() {
+                    boolean skip = true;
                     public void run() {
                         try {
                             // get the last 100 lines
                             String last = null;
                             String s;
                             SuRunner runner = new SuRunner();
-                            runner.addCommand("/system/bin/logcat -t 100");
+                            runner.addCommand("/system/bin/logcat -t 500 -b radio -b system -b main -b events -b radio");
                             process = runner.runSuCommand(LoggyService.this);
-//                            process = Runtime.getRuntime().exec(new String[] { "su", "-c", "/system/bin/logcat -t 100" });
                             DataInputStream dis = new DataInputStream(process.getInputStream());
                             while (null != (s = dis.readLine())) {
                                 if (s.length() == 0)
@@ -242,25 +243,52 @@ public class LoggyService extends Service {
                                 webSocket.send(s);
                             }
                             dis.close();
-
+                            
                             // now get the running log
                             runner = new SuRunner();
-                            runner.addCommand("/system/bin/logcat");
+                            runner.addCommand("/system/bin/logcat -b radio -b system -b main -b events -b radio");
                             process = runner.runSuCommand(LoggyService.this);//Runtime.getRuntime().exec(new String[] { "su", "-c", "/system/bin/logcat -t 100" });
-//                            process = Runtime.getRuntime().exec("su -c /system/bin/logcat");
-                            boolean skip = true;
+
+                            // also grab kmsg
+                            new Thread() {
+                                public void run() {
+                                    try {
+                                        SuRunner krunner = new SuRunner();
+                                        krunner.addCommand("echo catting kmsg");
+                                        krunner.addCommand("cat /proc/kmsg");
+                                        kmsgProcess = krunner.runSuCommand(LoggyService.this);
+                                        DataInputStream dis = new DataInputStream(process.getInputStream());
+                                        String s;
+                                        while (null != (s = dis.readLine())) {
+                                            if (s.length() == 0)
+                                                continue;
+                                            if (true) {//!skip) {
+                                                synchronized (webSocket) {
+                                                    webSocket.send("I/kmsg(0): " + s);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex) {
+                                    }
+
+                                };
+                            }.start();
+                            
                             dis = new DataInputStream(process.getInputStream());
                             while (null != (s = dis.readLine())) {
                                 if (s.length() == 0)
                                     continue;
                                 if (last.equals(s))
                                     skip = false;
-                                if (!skip)
-                                    webSocket.send(s);
+                                if (!skip) {
+                                    synchronized (webSocket) {
+                                        webSocket.send(s);
+                                    }
+                                }
                             }
                         }
                         catch (Exception e) {
-                            e.printStackTrace();
                         }
                     };
                 }.start();
@@ -273,13 +301,18 @@ public class LoggyService extends Service {
                     @Override
                     public void onClosed() {
                         try {
-                            process.destroy();
+                            kmsgProcess.destroy();
                         }
                         catch (Exception e)  {
                             // destroy will cause some angry noise in logcat and throw, since
                             // we are trying to destroy a root process.
                             // the kill succeeds, but it still gets angry.
                             // i assume it succeeds because the various streams are closed.
+                        }
+                        try {
+                            process.destroy();
+                        }
+                        catch (Exception e)  {
                         }
                     }
                 });

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.koushikdutta.loggy"
-    android:versionCode="1001"
-    android:versionName="1.0.0.1" >
+    android:versionCode="1002"
+    android:versionName="1.0.0.2" >
 
     <uses-sdk
         android:minSdkVersion="8"
