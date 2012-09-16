@@ -268,6 +268,7 @@
 		var processInfo = sscanf(parts[0], '%c/%s %d');
 		if (processInfo.length != 3) {
 			console.log('skipping');
+			console.log(e.data);
 			return;
 		}
 		var type = processInfo[0];
@@ -275,7 +276,8 @@
 		var pid = processInfo[2];
 		var text = parts[1];
 		if (!text || !tag || !pid || !text) {
-			console.log('skipping 2');
+			console.log('skipping');
+			console.log(e.data);
 			return;
 		}
 		var color = tags[tag];
