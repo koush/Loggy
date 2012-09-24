@@ -17,6 +17,18 @@ script(type="text/javascript", src="/javascripts/logcat.js")
         li
           a(href='https://github.com/koush/Loggy') Fork me on Github
 
+.navbar.navbar-fixed-bottom.navbar-inverse
+  .navbar-inner
+    .container
+      a.brand(href='#') Filter
+      ul.nav
+        li#no-filter
+          a(href='javascript:void(0)') Click on a tag or process id to apply a filter.
+        li#clear-filter.hide
+          a(href='javascript:clearFilters();') Clear Filter
+        li#current-filter.hide
+          a#current-filter-value(href='javascript:void(0)') Filter
+
 br
 br
 br
