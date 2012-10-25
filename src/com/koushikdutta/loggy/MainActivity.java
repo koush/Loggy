@@ -1,20 +1,26 @@
 package com.koushikdutta.loggy;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.net.wifi.WifiInfo;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemProperties;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -67,8 +73,8 @@ public class MainActivity extends Activity {
                     new Thread() {
                         public void run() {
                             SuRunner runner = new SuRunner();
-                            runner.addCommand("echo test");
-                            runner.runSuCommand(MainActivity.this);
+                            runner.addCommand("ls");
+                            runner.runSuCommandForResult(MainActivity.this);
                         };
                     }.start();
                     startService(new Intent(MainActivity.this, LoggyService.class));
@@ -136,6 +142,58 @@ public class MainActivity extends Activity {
         }
     }
 
+    static String CAMERA_INTENT = "com.koushikdutta.loggy.CAMERA";
+    private static final int ACTION_CAMERA = 10000;
+    File image;
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (intent == null)
+            return;
+        if (CAMERA_INTENT.equals(intent.getAction())) {
+            File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            try {
+                image = new File(storageDir, timeStamp + ".jpg");
+
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(image));
+//                takePictureIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");  
+
+                startActivityForResult(takePictureIntent, ACTION_CAMERA);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+    }
+    
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (image != null)
+            outState.putString("image", image.getAbsolutePath());
+    }
+    
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        
+        String i = savedInstanceState.getString("image");
+        if (i != null)
+            image = new File(i);
+    }
+    
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ACTION_CAMERA && resultCode == RESULT_OK && image != null) {
+            Intent intent = new Intent(CAMERA_INTENT);
+            intent.putExtra("image", image.getAbsolutePath());
+            sendBroadcast(intent);
+        }
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 //        getMenuInflater().inflate(R.menu.activity_main, menu);

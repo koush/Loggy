@@ -17,9 +17,15 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.StrictMode;
+import android.os.StrictMode.ThreadPolicy;
+import android.os.StrictMode.VmPolicy;
 import android.util.Log;
 
 import com.koushikdutta.async.AsyncServer;
@@ -78,6 +84,7 @@ public class LoggyService extends Service {
                 }
                 
                 try {
+                    response.getHeaders().getHeaders().add("Content-Type", AsyncHttpServer.getContentType(path));
                     FileInputStream is = new FileInputStream(file);
                     response.responseCode(200);
                     Util.pump(is, response, new CompletedCallback() {
@@ -221,6 +228,47 @@ public class LoggyService extends Service {
         view("/", "index");
 
         view("/logcat", "logcat");
+        view("/camera", "camera");
+        
+        mServer.websocket("/camera/stream", new WebSocketCallback() {
+            @Override
+            public void onConnected(final WebSocket webSocket) {
+                final BroadcastReceiver receiver = new BroadcastReceiver() {
+                    public void onReceive(android.content.Context context, Intent intent) {
+                        try {
+                            final JSONObject result = new JSONObject();
+                            String image = intent.getStringExtra("image");
+                            image = image.replace(Environment.getExternalStorageDirectory().getAbsolutePath(), "");
+                            result.put("image", image);
+                            Log.i(LOGTAG, image);
+                            new Thread() {
+                                public void run() {
+                                    webSocket.send(result.toString());
+                                };
+                            }.start();
+                        }
+                        catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    };
+                };
+                
+                Intent intent = new Intent(MainActivity.CAMERA_INTENT);
+                intent.setClass(LoggyService.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                
+                IntentFilter filter = new IntentFilter(MainActivity.CAMERA_INTENT);
+                registerReceiver(receiver, filter);
+                
+                webSocket.setClosedCallback(new ClosedCallback() {
+                    @Override
+                    public void onClosed() {
+                        unregisterReceiver(receiver);
+                    }
+                });
+            }
+        });
 
         mServer.websocket("/logcat/stream", new WebSocketCallback() {
             Process process;
