@@ -75,9 +75,15 @@ public class LoggyService extends Service {
                 }
 
                 if (file.isDirectory()) {
-                    StringBuilder b = new StringBuilder();
-                    b.append(String.format("<html><title>Loggy</title><head><script>WEB_SOCKET_SWF_LOCATION='/web-socket-js/WebSocketMain.swf';</script><link rel='stylesheet' href='/stylesheets/style.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap.min.css'></link><link rel='stylesheet' href='/bootstrap/css/bootstrap-responsive.min.css'></link><script>view = '/views/%s.jade';</script><script src='/javascripts/jquery-1.8.1.min.js'></script><script src='/bootstrap/js/bootstrap.js'></script><script src='/javascripts/jade.min.js'></script><script src='/javascripts/render.js'></script></head><body></body></html>", view));
-                    response.send(b.toString());
+                    try {
+                        if (mLayout == null)
+                            mLayout = readFully(AsyncHttpServer.getAssetStream(LoggyService.this, "layout.html"));
+                    }
+                    catch (IOException e) {
+                        response.send("internal error");
+                        return;
+                    }
+                    response.send(String.format(mLayout, view));
                     return;
                 }
                 
