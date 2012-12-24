@@ -19,7 +19,7 @@
 	  }
 	  
 	  $.each(templates, function(index, element) {
-		  var view = 'views/' + element.id + '.jade';
+		  var view = '/views/' + element.id + '.jade';
 		  
 		  jade.renderFile(view, {}, function(err, rendered) {
 			  views[element.id] = rendered;
