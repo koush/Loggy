@@ -1,4 +1,6 @@
-(function() {
+loadcontent = function() {
+	$('#dir-rows').empty();
+	$('#file-rows').empty();
 	var search = '/sdcard';
 	var path = window.location.href.substring(window.location.href.indexOf(search) + search.length);
 	if (path.length == '')
@@ -52,4 +54,21 @@
 			})
 		}
 	})
-})();
+}
+
+loadcontent();
+
+
+
+$("#sdcard a").live("click", function (event) {
+	window.history.pushState({},"", $(this).attr("href"));
+	loadcontent();
+    event.preventDefault();
+});
+
+window.onpopstate = function(e){
+    if(e.state){
+    }
+    loadcontent();
+    
+};
