@@ -1,7 +1,6 @@
 package com.koushikdutta.loggy;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -12,7 +11,6 @@ import java.util.Enumeration;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.net.Uri;
 import android.net.wifi.WifiManager;

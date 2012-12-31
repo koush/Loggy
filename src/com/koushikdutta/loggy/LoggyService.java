@@ -30,12 +30,13 @@ import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.Util;
 import com.koushikdutta.async.callback.ClosedCallback;
 import com.koushikdutta.async.callback.CompletedCallback;
+import com.koushikdutta.async.http.WebSocket;
+import com.koushikdutta.async.http.libcore.RequestHeaders;
 import com.koushikdutta.async.http.server.AsyncHttpServer;
+import com.koushikdutta.async.http.server.AsyncHttpServer.WebSocketCallback;
 import com.koushikdutta.async.http.server.AsyncHttpServerRequest;
 import com.koushikdutta.async.http.server.AsyncHttpServerResponse;
 import com.koushikdutta.async.http.server.HttpServerRequestCallback;
-import com.koushikdutta.async.http.server.WebSocket;
-import com.koushikdutta.async.http.server.WebSocketCallback;
 
 public class LoggyService extends Service {
     AsyncHttpServer mServer;
@@ -233,7 +234,8 @@ public class LoggyService extends Service {
     private static final int LOGGY_NOTIFICATION = 3000;
     @Override
     public void onCreate() {
-        mServer = new AsyncHttpServer(Settings.getInstance(this).getInt("port", 3000));
+        mServer = new AsyncHttpServer();
+        mServer.listen(Settings.getInstance(this).getInt("port", 3000));
         
         NotificationManager nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         Notification n = new Notification(R.drawable.ic_stat_running, getString(R.string.loggy_on), 0);
@@ -251,7 +253,7 @@ public class LoggyService extends Service {
         
         mServer.websocket("/camera/stream", new WebSocketCallback() {
             @Override
-            public void onConnected(final WebSocket webSocket) {
+            public void onConnected(final WebSocket webSocket, RequestHeaders headers) {
                 final BroadcastReceiver receiver = new BroadcastReceiver() {
                     public void onReceive(android.content.Context context, Intent intent) {
                         try {
@@ -293,7 +295,7 @@ public class LoggyService extends Service {
             Process process;
             Process kmsgProcess;
             @Override
-            public void onConnected(final WebSocket webSocket) {
+            public void onConnected(final WebSocket webSocket, RequestHeaders headers) {
                 new Thread() {
                     boolean skip = true;
                     public void run() {
@@ -310,7 +312,13 @@ public class LoggyService extends Service {
                                 if (s.length() == 0)
                                     continue;
                                 last = s;
-                                webSocket.send(s);
+                                final String line = s;
+                                AsyncServer.getDefault().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        webSocket.send(line);
+                                    }
+                                });
                             }
                             dis.close();
                             
@@ -333,9 +341,13 @@ public class LoggyService extends Service {
                                             if (s.length() == 0)
                                                 continue;
                                             if (!skip) {
-                                                synchronized (webSocket) {
-                                                    webSocket.send("I/kmsg(0): " + s);
-                                                }
+                                                final String line = s;
+                                                AsyncServer.getDefault().post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        webSocket.send("I/kmsg(0): " + line);
+                                                    }
+                                                });
                                             }
                                         }
                                         Log.i(LOGTAG, "kmsg exited.");
@@ -352,9 +364,13 @@ public class LoggyService extends Service {
                                 if (last.equals(s))
                                     skip = false;
                                 if (!skip) {
-                                    synchronized (webSocket) {
-                                        webSocket.send(s);
-                                    }
+                                    final String line = s;
+                                    AsyncServer.getDefault().post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            webSocket.send(line);
+                                        }
+                                    });
                                 }
                             }
                             Log.i(LOGTAG, "logcat exited.");
