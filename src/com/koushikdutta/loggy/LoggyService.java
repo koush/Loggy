@@ -28,12 +28,11 @@ import android.util.Log;
 
 import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.Util;
-import com.koushikdutta.async.callback.ClosedCallback;
 import com.koushikdutta.async.callback.CompletedCallback;
 import com.koushikdutta.async.http.WebSocket;
 import com.koushikdutta.async.http.libcore.RequestHeaders;
 import com.koushikdutta.async.http.server.AsyncHttpServer;
-import com.koushikdutta.async.http.server.AsyncHttpServer.WebSocketCallback;
+import com.koushikdutta.async.http.server.AsyncHttpServer.WebSocketRequestCallback;
 import com.koushikdutta.async.http.server.AsyncHttpServerRequest;
 import com.koushikdutta.async.http.server.AsyncHttpServerResponse;
 import com.koushikdutta.async.http.server.HttpServerRequestCallback;
@@ -251,7 +250,7 @@ public class LoggyService extends Service {
         view("/logcat", "logcat");
         view("/camera", "camera");
         
-        mServer.websocket("/camera/stream", new WebSocketCallback() {
+        mServer.websocket("/camera/stream", new WebSocketRequestCallback() {
             @Override
             public void onConnected(final WebSocket webSocket, RequestHeaders headers) {
                 final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -282,16 +281,16 @@ public class LoggyService extends Service {
                 IntentFilter filter = new IntentFilter(MainActivity.CAMERA_INTENT);
                 registerReceiver(receiver, filter);
                 
-                webSocket.setClosedCallback(new ClosedCallback() {
+                webSocket.setClosedCallback(new CompletedCallback() {
                     @Override
-                    public void onClosed() {
+                    public void onCompleted(Exception ex) {
                         unregisterReceiver(receiver);
                     }
                 });
             }
         });
 
-        mServer.websocket("/logcat/stream", new WebSocketCallback() {
+        mServer.websocket("/logcat/stream", new WebSocketRequestCallback() {
             Process process;
             Process kmsgProcess;
             @Override
@@ -385,9 +384,9 @@ public class LoggyService extends Service {
                     public void onStringAvailable(String s) {
                     }
                 });
-                webSocket.setClosedCallback(new ClosedCallback() {
+                webSocket.setClosedCallback(new CompletedCallback() {
                     @Override
-                    public void onClosed() {
+                    public void onCompleted(Exception ex) {
                         try {
                             kmsgProcess.destroy();
                         }
